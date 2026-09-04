@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order Confirmed — Vrinda Sethi</title>
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body class="checkout">
+
+<header class="mini-hdr">
+  <a href="index.html" class="wordmark" style="font-size:19px">VRINDA SETHI</a>
+</header>
+
+<main>
+  <div class="stepper">
+    <div class="step done"><div class="step__dot"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="m4 12 5.5 5.5L20 7"/></svg></div><span>Shopping Bag</span></div>
+    <div class="step__line done"></div>
+    <div class="step done"><div class="step__dot"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="m4 12 5.5 5.5L20 7"/></svg></div><span>Address</span></div>
+    <div class="step__line done"></div>
+    <div class="step done"><div class="step__dot"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="m4 12 5.5 5.5L20 7"/></svg></div><span>Payment</span></div>
+  </div>
+
+  <div id="body"></div>
+
+  <section class="section tint">
+    <div class="section-head"><h2><b>You</b> May Also Like</h2></div>
+    <div id="more"></div>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+const o = readJSON(ORDER_KEY, null);
+const METHOD = { upi: "UPI", card: "Credit / Debit Card", nb: "Net Banking", cod: "Cash On Delivery" };
+
+if (!o) {
+  document.getElementById("body").innerHTML = `
+    <div class="confirm">
+      <h1>No recent order</h1>
+      <p>Nothing has been placed from this browser yet.</p>
+      <a class="btn btn--black" href="index.html" style="margin-top:26px">Return home</a>
+    </div>`;
+} else {
+  const eta = new Date(Date.now() + 5 * 864e5)
+    .toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
+  const a = o.address || {};
+
+  document.getElementById("body").innerHTML = `
+    <div class="confirm">
+      <div class="confirm__tick">${I.tick}</div>
+      <h1>Thank you${a.name ? ", " + a.name.split(" ")[0] : ""}.</h1>
+      <p>Your order is confirmed. The atelier will email a dispatch note<br>once your pieces have been checked and wrapped.</p>
+      <div class="confirm__id">${o.id}</div>
+      <p style="font-size:14px">Estimated delivery — ${eta}</p>
+    </div>
+
+    <div class="co" style="padding-top:0">
+      <div>
+        <h2 style="margin:0 0 12px">Your Pieces</h2>
+        <div class="co__panel" style="padding:0 22px">
+          ${o.lines.map(l => `<div class="bagitem">
+            <a class="bagitem__img" href="product.html?id=${l.id}"><img src="assets/img/products/${l.image}.jpg" alt=""></a>
+            <div><div class="bagitem__brand">${byId(l.id) ? byId(l.id).line : ""}</div>
+              <div class="bagitem__name">${l.name}</div>
+              <div class="bagitem__price">${inr(l.price)}</div>
+              <div class="bagitem__name" style="margin-top:8px">Size ${l.size} · Qty ${l.qty}</div></div>
+            <div></div></div>`).join("")}
+        </div>
+
+        <h2 style="margin:24px 0 12px">Delivering To</h2>
+        <div class="co__panel">
+          <div style="font-family:LatoLight;font-size:14px;line-height:22px;color:var(--muted)">
+            <b style="font-family:LatoRegular;color:var(--ink);display:block;margin-bottom:4px">${a.name || ""} · ${a.type || "Home"}</b>
+            ${a.line || ""}<br>${a.city || ""}, ${a.state || ""} — ${a.pin || ""}<br>Mobile ${a.phone || ""}
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="summary">
+          <h3>Payment</h3>
+          <dl>
+            <dt>Method</dt><dd>${METHOD[o.method] || o.method}</dd>
+            <dt>Status</dt><dd class="free">${o.method === "cod" ? "Due on delivery" : "Paid"}</dd>
+            <div class="rule"></div>
+            <dt class="total">Total</dt><dd class="total">${inr(o.total)}</dd>
+          </dl>
+        </div>
+        <a class="btn btn--black btn--lg btn--block" style="margin-top:16px" href="index.html">Continue Shopping</a>
+        <button class="btn btn--white btn--lg btn--block" style="margin-top:10px" id="track">Track This Order</button>
+        <p style="font-family:LatoLight;font-size:12px;color:var(--muted-2);margin-top:14px;text-align:center">
+          Demo order — nothing was charged and nothing will ship.</p>
+      </aside>
+    </div>`;
+
+  document.getElementById("track").onclick = () => openModal(`
+    <h3>Order ${o.id}</h3>
+    <div style="margin-top:20px;font-family:LatoLight;font-size:14px;line-height:26px;color:var(--muted)">
+      <div style="display:flex;gap:14px;align-items:flex-start;padding-bottom:16px">
+        <span style="width:9px;height:9px;border-radius:50%;background:var(--ok);margin-top:8px;flex:none"></span>
+        <span><b style="font-family:LatoRegular;color:var(--ink)">Order placed</b><br>Just now</span></div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding-bottom:16px">
+        <span style="width:9px;height:9px;border-radius:50%;background:var(--line);margin-top:8px;flex:none"></span>
+        <span><b style="font-family:LatoRegular;color:var(--ink)">Quality check at the atelier</b><br>Expected in 2 days</span></div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding-bottom:16px">
+        <span style="width:9px;height:9px;border-radius:50%;background:var(--line);margin-top:8px;flex:none"></span>
+        <span><b style="font-family:LatoRegular;color:var(--ink)">Dispatched</b><br>Expected in 3 days</span></div>
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <span style="width:9px;height:9px;border-radius:50%;background:var(--line);margin-top:8px;flex:none"></span>
+        <span><b style="font-family:LatoRegular;color:var(--ink)">Delivered</b><br>${eta}</span></div>
+    </div>`);
+}
+
+document.getElementById("more").innerHTML = `<div class="rail" style="padding:41px 24px 0">
+  <button class="rail__arrow" data-dir="prev" aria-label="Previous">${I.chevL}</button>
+  <div class="rail__track">${[...PRODUCTS].sort(() => Math.random() - .5).slice(0, 8).map(p => cardHTML(p)).join("")}</div>
+  <button class="rail__arrow" data-dir="next" aria-label="Next">${I.chevR}</button></div>`;
+
+mountShell("order");
+</script>
+</body>
+</html>

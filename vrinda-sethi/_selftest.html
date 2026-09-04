@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Self test</title>
+<style>body{font:14px/1.6 monospace;padding:24px;background:#fff;color:#111}
+.ok{color:#0a7a2f}.bad{color:#c00;font-weight:700}h2{margin:22px 0 8px;font-size:15px}</style>
+</head><body>
+<h1 style="font-size:18px">Vrinda Sethi — build self-test</h1>
+<div id="out"></div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+const out = document.getElementById("out");
+let pass = 0, fail = 0;
+function t(name, fn){
+  let ok = false, err = "";
+  try { ok = !!fn(); } catch (e) { err = e.message; }
+  ok ? pass++ : fail++;
+  out.insertAdjacentHTML("beforeend",
+    `<div class="${ok ? "ok" : "bad"}">${ok ? "PASS" : "FAIL"} — ${name}${err ? " :: " + err : ""}</div>`);
+}
+function h(s){ out.insertAdjacentHTML("beforeend", `<h2>${s}</h2>`); }
+
+h("Catalogue integrity");
+t("products exist", () => PRODUCTS.length >= 24);
+t("unique ids", () => new Set(PRODUCTS.map(p => p.id)).size === PRODUCTS.length);
+t("unique slugs", () => new Set(PRODUCTS.map(p => p.slug)).size === PRODUCTS.length);
+t("every product has >=1 image", () => PRODUCTS.every(p => p.images.length >= 1));
+t("every product has sizes + matching stock keys", () =>
+  PRODUCTS.every(p => p.sizes.length && p.sizes.every(s => s in p.stock)));
+t("price <= mrp everywhere", () => PRODUCTS.every(p => p.price <= p.mrp));
+t("every sub has a label", () => PRODUCTS.every(p => SUB_LABEL[p.sub]));
+t("every occ tag has a label", () => PRODUCTS.every(p => p.occ.every(o => SUB_LABEL[o])));
+t("both categories populated", () =>
+  PRODUCTS.filter(p => p.cat === "women").length >= 10 && PRODUCTS.filter(p => p.cat === "men").length >= 10);
+t("every clothing menu entry returns products", () => {
+  // "bridal" is a virtual sub resolved by plp.js from line + occasion, not p.sub
+  const virtual = ["bridal"];
+  const bad = [];
+  ["women","men"].forEach(c => TAXONOMY[c].groups[0].items.forEach(([l, s]) => {
+    if (virtual.includes(s)) return;
+    if (!PRODUCTS.some(p => p.cat === c && p.sub === s)) bad.push(c + "/" + s);
+  }));
+  if (bad.length) throw new Error("empty: " + bad.join(", "));
+  return true;
+});
+t("virtual sub 'bridal' resolves for both categories", () =>
+  ["women","men"].every(c =>
+    PRODUCTS.some(p => p.cat === c && (p.line.includes("Bridal") || p.occ.includes("occ-wedding")))));
+t("every 'shop by occasion' entry returns products", () => {
+  const bad = [];
+  ["women","men"].forEach(c => TAXONOMY[c].groups[1].items.forEach(([l, s]) => {
+    if (!PRODUCTS.some(p => p.cat === c && p.occ.includes(s))) bad.push(c + "/" + s);
+  }));
+  if (bad.length) throw new Error("empty: " + bad.join(", "));
+  return true;
+});
+
+h("Formatting helpers");
+t("inr formats lakhs Indian-style", () => inr(185000) === "₹1,85,000");
+t("discountPct correct", () => discountPct({ price: 168000, mrp: 210000 }) === 20);
+t("discountPct zero when no markdown", () => discountPct({ price: 100, mrp: 100 }) === 0);
+t("img path shape", () => img("w-leh-01-a") === "assets/img/products/w-leh-01-a.jpg");
+
+h("Cart");
+Cart.clear();
+t("starts empty", () => Cart.count() === 0);
+Cart.add("VS-W-1101", "M");
+t("add sets count 1", () => Cart.count() === 1);
+Cart.add("VS-W-1101", "M");
+t("same id+size merges qty", () => Cart.all().length === 1 && Cart.count() === 2);
+Cart.add("VS-W-1101", "L");
+t("different size = new line", () => Cart.all().length === 2);
+Cart.setQty(0, 3);
+t("setQty works", () => Cart.all()[0].qty === 3);
+t("totals add up", () => {
+  const p = byId("VS-W-1101");
+  return Cart.totals().value === p.price * 4;
+});
+t("shipping free above the threshold", () => Cart.totals().ship === 0);
+Cart.clear(); Cart.add("VS-W-4102", "M");            // ₹29,000 — below ₹40,000
+t("shipping charged below the threshold", () => Cart.totals().ship === 450);
+t("grand total includes shipping", () => {
+  const t2 = Cart.totals();
+  return t2.grand === t2.value + 450;
+});
+t("savings computed on marked-down goods", () => {
+  Cart.clear(); Cart.add("VS-W-1103", "M");
+  const p = byId("VS-W-1103");
+  return Cart.totals().saved === p.mrp - p.price;
+});
+Cart.remove(0);
+t("remove empties bag", () => Cart.count() === 0);
+
+h("Wishlist");
+const wasOn = Wish.has("VS-M-1101");
+Wish.toggle("VS-M-1101");
+t("toggle flips state", () => Wish.has("VS-M-1101") !== wasOn);
+Wish.toggle("VS-M-1101");
+t("toggle restores state", () => Wish.has("VS-M-1101") === wasOn);
+
+h("Render helpers");
+t("cardHTML produces a link to the PDP", () => cardHTML(PRODUCTS[0]).includes("product.html?id=" + PRODUCTS[0].id));
+t("cardHTML marks sold-out sizes", () => {
+  const p = PRODUCTS.find(x => Object.values(x.stock).some(v => v === 0));
+  return cardHTML(p).includes('class="out"');
+});
+t("megaHTML builds both menus", () => megaHTML("women").includes("Lehengas") && megaHTML("men").includes("Sherwanis"));
+t("buildFooter includes the trust strip", () => buildFooter().includes("Secure Payment"));
+
+h("Seeding a bag for the checkout screenshots");
+Cart.clear();
+Cart.add("VS-M-1101", "42");
+Cart.add("VS-W-2101", "One Size");
+writeJSON(ADDR_KEY, { name:"Ananya Raghunathan", phone:"9876543210",
+  line:"14 Aurangzeb Lane, Golf Links", pin:"110003", city:"New Delhi", state:"Delhi", type:"Home" });
+t("bag seeded with 2 lines", () => Cart.all().length === 2);
+
+// also seed a completed order so order.html can be reviewed without checking out
+writeJSON(ORDER_KEY, {
+  id: "VS" + Date.now().toString().slice(-8),
+  at: new Date().toISOString(),
+  lines: Cart.all().map(l => ({ ...l, name: byId(l.id).name, price: byId(l.id).price, image: byId(l.id).images[0] })),
+  total: Cart.totals().grand,
+  method: "upi",
+  address: readJSON(ADDR_KEY, {})
+});
+t("order seeded", () => !!readJSON(ORDER_KEY, null).id);
+
+out.insertAdjacentHTML("beforeend",
+  `<h2 class="${fail ? "bad" : "ok"}">${pass} passed, ${fail} failed</h2>`);
+</script></body></html>

@@ -1,0 +1,23 @@
+# Reference material — deliberately not committed.
+#
+# www.thecollective.in/ is a 509 MB / 820-file mirror of a live third-party
+# commercial site, kept locally as design reference only. Publishing it to a
+# repo would redistribute someone else's copyrighted site, and it dwarfs the
+# actual project.
+www.thecollective.in/
+
+# 97 MB screen recording — source material, too large for git.
+# Use Git LFS if you ever need it versioned.
+*.mp4
+!vrinda-sethi/assets/video/*.mp4
+
+# Scratch / working directories
+_work/
+_frames/
+_review/
+_rev/
+
+# OS noise
+Thumbs.db
+Desktop.ini
+.DS_Store

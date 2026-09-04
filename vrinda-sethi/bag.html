@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopping Bag — Vrinda Sethi</title>
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body class="checkout">
+
+<header class="mini-hdr">
+  <a href="index.html" class="wordmark" style="font-size:19px">VRINDA SETHI</a>
+</header>
+
+<main>
+  <div class="stepper" id="stepper"></div>
+  <div class="co">
+    <div id="left"></div>
+    <aside id="right"></aside>
+  </div>
+
+  <section class="section" id="picks-wrap">
+    <div class="section-head"><h2><b>Top</b> Picks For You</h2></div>
+    <div id="picks"></div>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+/* ==========================================================================
+   Three-step checkout on one page: Shopping Bag → Address → Payment
+   ========================================================================== */
+/* ?step=2|3 deep-links a checkout stage (handy for review; harmless otherwise) */
+let step = Math.min(3, Math.max(1, +qs("step") || 1));
+let coupon = null;
+const COUPONS = { "VS10": { pct: 10, label: "10% off" }, "ATELIER": { pct: 15, label: "15% atelier preview" } };
+
+/* ---------------- Stepper ---------------- */
+function paintStepper(){
+  const labels = ["Shopping Bag", "Address", "Payment"];
+  document.getElementById("stepper").innerHTML = labels.map((l, i) => {
+    const n = i + 1;
+    const cls = n < step ? "done" : n === step ? "current" : "";
+    return `${i ? `<div class="step__line ${n <= step ? "done" : ""}"></div>` : ""}
+      <div class="step ${cls}"><div class="step__dot">${n < step ? I.tick : ""}</div><span>${l}</span></div>`;
+  }).join("");
+}
+
+/* ---------------- Summary panel ---------------- */
+function paintSummary(){
+  const t = Cart.totals();
+  const n = Cart.count();
+  const disc = coupon ? Math.round(t.value * COUPONS[coupon].pct / 100) : 0;
+  const grand = t.value - disc + t.ship;
+
+  document.getElementById("right").innerHTML = !n ? "" : `
+    <div class="summary">
+      <h3>Order Summary <span>(${n} ${n === 1 ? "item" : "items"})</span></h3>
+      <dl>
+        <dt>Order Value</dt><dd>${inr(t.value)}</dd>
+        ${t.saved ? `<dt>Savings</dt><dd class="free">− ${inr(t.saved)}</dd>` : ""}
+        ${disc ? `<dt>Coupon (${coupon})</dt><dd class="free">− ${inr(disc)}</dd>` : ""}
+        <dt>Shipping</dt><dd class="${t.ship ? "" : "free"}">${t.ship ? inr(t.ship) : "Free"}</dd>
+        <div class="rule"></div>
+        <dt class="total">Grand Total</dt><dd class="total">${inr(grand)}</dd>
+      </dl>
+    </div>
+    <button class="coupon" id="couponBtn">${I.tag}<span>${coupon ? `Coupon ${coupon} applied` : "Apply Coupon"}</span>${I.arrowR}</button>
+    <button class="btn btn--black btn--lg btn--block" style="margin-top:16px" id="cta">
+      ${step === 1 ? "Place Order" : step === 2 ? "Continue To Payment" : "Pay " + inr(grand)}
+    </button>
+    <p style="font-family:LatoLight;font-size:12px;color:var(--muted-2);margin-top:14px;text-align:center">
+      Demo checkout — no payment is taken.</p>`;
+
+  const cb = document.getElementById("couponBtn");
+  if (cb) cb.onclick = openCoupon;
+  const cta = document.getElementById("cta");
+  if (cta) cta.onclick = advance;
+}
+
+function openCoupon(){
+  const close = openModal(`<h3>Apply a coupon</h3>
+    <p class="lead" style="margin-top:12px">Try <b>VS10</b> or <b>ATELIER</b>.</p>
+    <div class="field"><input id="cin" placeholder="Enter coupon code" style="text-transform:uppercase"></div>
+    <p class="msg" id="cmsg" style="display:none;color:var(--sale-2);font-family:LatoLight;font-size:12px;margin:-8px 0 12px"></p>
+    <button class="btn btn--black btn--block" id="capply">Apply</button>
+    ${coupon ? `<button class="btn btn--white btn--block" style="margin-top:10px" id="cclear">Remove ${coupon}</button>` : ""}`);
+  document.getElementById("capply").onclick = () => {
+    const v = document.getElementById("cin").value.trim().toUpperCase();
+    if (COUPONS[v]) { coupon = v; close(); paintSummary(); toast(`Coupon applied — ${COUPONS[v].label}`); }
+    else { const m = document.getElementById("cmsg"); m.style.display = "block"; m.textContent = "That code isn't valid."; }
+  };
+  const cc = document.getElementById("cclear");
+  if (cc) cc.onclick = () => { coupon = null; close(); paintSummary(); toast("Coupon removed"); };
+}
+
+/* ---------------- Step 1 — the bag ---------------- */
+function paintBag(){
+  const lines = Cart.all();
+  // an empty bag has no summary column — let the panel use the full width
+  document.querySelector(".co").style.gridTemplateColumns = lines.length ? "" : "1fr";
+  if (!lines.length) {
+    document.getElementById("left").innerHTML = `
+      <div class="co__panel" style="text-align:center;padding:70px 22px">
+        <p style="font-family:LatoLight;font-size:16px;color:var(--muted);margin-bottom:24px">Your shopping bag is empty.</p>
+        <a class="btn btn--black" href="women.html">Shop Women</a>
+        <a class="btn btn--white" href="men.html" style="margin-left:10px">Shop Men</a>
+      </div>`;
+    return;
+  }
+
+  document.getElementById("left").innerHTML = `
+    <h2 style="margin:0 0 12px">Shopping Bag <span class="n">(${Cart.count()} ${Cart.count() === 1 ? "item" : "items"})</span></h2>
+    <div class="co__panel" style="padding:0 22px">
+      ${lines.map((l, i) => {
+        const p = byId(l.id); if (!p) return "";
+        const d = discountPct(p);
+        return `<div class="bagitem">
+          <a class="bagitem__img" href="product.html?id=${p.id}"><img src="${img(p.images[0])}" alt=""></a>
+          <div>
+            <a class="bagitem__brand" href="product.html?id=${p.id}">${p.line}</a>
+            <div class="bagitem__name">${p.name}</div>
+            <div class="bagitem__price">${inr(p.price)}
+              ${d ? `<span style="color:var(--muted-2);text-decoration:line-through;margin-left:8px">${inr(p.mrp)}</span>
+                     <span style="color:var(--sale-2);margin-left:6px">${d}% off</span>` : ""}</div>
+            <div class="bagitem__ctrls">
+              <select data-size-of="${i}">${p.sizes.map(s =>
+                `<option ${s === l.size ? "selected" : ""} ${p.stock[s] ? "" : "disabled"}>${s}</option>`).join("")}</select>
+              <select data-qty-of="${i}">${[1,2,3,4,5].map(q =>
+                `<option value="${q}" ${q === l.qty ? "selected" : ""}>Qty ${q}</option>`).join("")}</select>
+            </div>
+            <div class="bagitem__note">${I.ret}<span>15 days returns / exchange available</span></div>
+          </div>
+          <button class="bagitem__x" data-rm="${i}" aria-label="Remove">${I.x}</button>
+        </div>`;
+      }).join("")}
+    </div>`;
+}
+
+/* ---------------- Step 2 — address ---------------- */
+function addrPanel(){
+  const saved = readJSON(ADDR_KEY, null);
+  return `
+    <h2 style="margin:0 0 12px">Delivery Address</h2>
+    <div class="co__panel">
+      <div class="grid-f">
+        <div class="field"><label>Full Name *</label><input id="a_name" value="${saved?.name || ""}"><span class="msg">Required</span></div>
+        <div class="field"><label>Mobile Number *</label><input id="a_phone" maxlength="10" inputmode="numeric" value="${saved?.phone || ""}"><span class="msg">Enter 10 digits</span></div>
+      </div>
+      <div class="field"><label>Address — House, Street, Area *</label><input id="a_line" value="${saved?.line || ""}"><span class="msg">Required</span></div>
+      <div class="grid-f">
+        <div class="field"><label>Pincode *</label><input id="a_pin" maxlength="6" inputmode="numeric" value="${saved?.pin || ""}"><span class="msg">Enter 6 digits</span></div>
+        <div class="field"><label>City *</label><input id="a_city" value="${saved?.city || ""}"><span class="msg">Required</span></div>
+      </div>
+      <div class="grid-f">
+        <div class="field"><label>State *</label>
+          <select id="a_state">${["Delhi","Maharashtra","Karnataka","Tamil Nadu","West Bengal","Telangana","Gujarat","Rajasthan","Punjab","Uttar Pradesh"]
+            .map(s => `<option ${saved?.state === s ? "selected" : ""}>${s}</option>`).join("")}</select></div>
+        <div class="field"><label>Address Type</label>
+          <select id="a_type"><option>Home</option><option ${saved?.type === "Office" ? "selected" : ""}>Office</option></select></div>
+      </div>
+    </div>
+    ${bagRecap()}`;
+}
+
+/* ---------------- Step 3 — payment ---------------- */
+function payPanel(){
+  const a = readJSON(ADDR_KEY, {});
+  return `
+    <h2 style="margin:0 0 12px">Delivering To</h2>
+    <div class="co__panel" style="display:flex;justify-content:space-between;gap:18px;align-items:flex-start">
+      <div style="font-family:LatoLight;font-size:14px;line-height:22px;color:var(--muted)">
+        <b style="font-family:LatoRegular;color:var(--ink);display:block;margin-bottom:4px">${a.name || ""} · ${a.type || "Home"}</b>
+        ${a.line || ""}<br>${a.city || ""}, ${a.state || ""} — ${a.pin || ""}<br>Mobile ${a.phone || ""}
+      </div>
+      <button class="btn btn--white" id="editAddr" style="padding:8px 16px;flex:none">Change</button>
+    </div>
+
+    <h2 style="margin:24px 0 12px">Payment Method</h2>
+    <div class="co__panel">
+      <label class="payopt is-on"><input type="radio" name="pay" value="upi" checked>
+        <span><b>UPI</b><small>GPay, PhonePe, Paytm and any BHIM-UPI app</small></span></label>
+      <label class="payopt"><input type="radio" name="pay" value="card">
+        <span><b>Credit / Debit Card</b><small>Visa, Mastercard, RuPay, Amex</small></span></label>
+      <label class="payopt"><input type="radio" name="pay" value="nb">
+        <span><b>Net Banking</b><small>All major Indian banks</small></span></label>
+      <label class="payopt"><input type="radio" name="pay" value="cod">
+        <span><b>Cash On Delivery</b><small>Available on prêt under ₹1,00,000</small></span></label>
+
+      <div id="payFields" style="margin-top:20px"></div>
+    </div>
+    ${bagRecap()}`;
+}
+
+function bagRecap(){
+  const lines = Cart.all();
+  return `<h2 style="margin:24px 0 12px">Shopping Bag <span class="n">(${Cart.count()} ${Cart.count() === 1 ? "item" : "items"})</span></h2>
+    <div class="co__panel" style="padding:0 22px">
+      ${lines.map(l => { const p = byId(l.id); if (!p) return "";
+        return `<div class="bagitem">
+          <div class="bagitem__img"><img src="${img(p.images[0])}" alt=""></div>
+          <div><div class="bagitem__brand">${p.line}</div>
+            <div class="bagitem__name">${p.name}</div>
+            <div class="bagitem__price">${inr(p.price)}</div>
+            <div class="bagitem__name" style="margin-top:8px">Size ${l.size} · Qty ${l.qty}</div></div>
+          <div></div></div>`; }).join("")}
+    </div>`;
+}
+
+const PAY_FIELDS = {
+  upi:  `<div class="field"><label>UPI ID</label><input placeholder="yourname@bank"></div>`,
+  card: `<div class="field"><label>Card Number</label><input placeholder="0000 0000 0000 0000" maxlength="19"></div>
+         <div class="grid-f"><div class="field"><label>Expiry</label><input placeholder="MM / YY" maxlength="7"></div>
+         <div class="field"><label>CVV</label><input placeholder="•••" maxlength="4" type="password"></div></div>
+         <div class="field"><label>Name On Card</label><input placeholder="As printed"></div>`,
+  nb:   `<div class="field"><label>Select Bank</label><select><option>HDFC Bank</option><option>ICICI Bank</option><option>State Bank of India</option><option>Axis Bank</option><option>Kotak Mahindra</option></select></div>`,
+  cod:  `<p style="font-family:LatoLight;font-size:14px;color:var(--muted);line-height:22px">Pay the courier on delivery by cash or UPI. A ₹200 handling fee applies to cash-on-delivery orders over ₹50,000.</p>`
+};
+
+/* ---------------- Flow ---------------- */
+function paint(){
+  paintStepper();
+  if (step === 1) paintBag();
+  if (step === 2) document.getElementById("left").innerHTML = addrPanel();
+  if (step === 3) {
+    document.getElementById("left").innerHTML = payPanel();
+    document.getElementById("payFields").innerHTML = PAY_FIELDS.upi;
+    document.getElementById("editAddr").onclick = () => { step = 2; paint(); };
+  }
+  paintSummary();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function validAddress(){
+  const f = [
+    ["a_name",  v => v.trim().length > 1],
+    ["a_phone", v => v.replace(/\D/g, "").length === 10],
+    ["a_line",  v => v.trim().length > 5],
+    ["a_pin",   v => v.replace(/\D/g, "").length === 6],
+    ["a_city",  v => v.trim().length > 1]
+  ];
+  let ok = true;
+  f.forEach(([id, test]) => {
+    const el = document.getElementById(id);
+    const good = test(el.value);
+    el.closest(".field").classList.toggle("err", !good);
+    if (!good) ok = false;
+  });
+  if (ok) {
+    writeJSON(ADDR_KEY, {
+      name: a_name.value.trim(), phone: a_phone.value, line: a_line.value.trim(),
+      pin: a_pin.value, city: a_city.value.trim(), state: a_state.value, type: a_type.value
+    });
+  } else toast("Please complete the highlighted fields");
+  return ok;
+}
+
+function advance(){
+  if (!Cart.count()) { toast("Your bag is empty"); return; }
+  if (step === 1) { step = 2; paint(); return; }
+  if (step === 2) { if (validAddress()) { step = 3; paint(); } return; }
+
+  // step 3 — place the order
+  const t = Cart.totals();
+  const disc = coupon ? Math.round(t.value * COUPONS[coupon].pct / 100) : 0;
+  const method = document.querySelector('input[name="pay"]:checked').value;
+  const order = {
+    id: "VS" + Date.now().toString().slice(-8),
+    at: new Date().toISOString(),
+    lines: Cart.all().map(l => ({ ...l, name: byId(l.id).name, price: byId(l.id).price, image: byId(l.id).images[0] })),
+    total: t.value - disc + t.ship,
+    method, address: readJSON(ADDR_KEY, {})
+  };
+  writeJSON(ORDER_KEY, order);
+
+  const btn = document.getElementById("cta");
+  btn.textContent = "Processing…"; btn.classList.add("is-disabled");
+  setTimeout(() => { Cart.clear(); location.href = "order.html"; }, 1100);
+}
+
+/* ---------------- Events ---------------- */
+document.addEventListener("change", e => {
+  const q = e.target.closest("[data-qty-of]");
+  if (q) { Cart.setQty(+q.dataset.qtyOf, +q.value); paint(); toast("Bag updated"); }
+  const s = e.target.closest("[data-size-of]");
+  if (s) { Cart.setSize(+s.dataset.sizeOf, s.value); toast("Size updated"); }
+  if (e.target.name === "pay") {
+    document.querySelectorAll(".payopt").forEach(o => o.classList.toggle("is-on", o.contains(e.target)));
+    document.getElementById("payFields").innerHTML = PAY_FIELDS[e.target.value];
+  }
+});
+document.addEventListener("click", e => {
+  const r = e.target.closest("[data-rm]");
+  if (r) { Cart.remove(+r.dataset.rm); paint(); toast("Removed from bag"); }
+});
+
+/* ---------------- Boot ---------------- */
+document.getElementById("picks").innerHTML = `<div class="rail" style="padding:41px 24px 0">
+  <button class="rail__arrow" data-dir="prev" aria-label="Previous">${I.chevL}</button>
+  <div class="rail__track">${[...PRODUCTS].sort(() => Math.random() - .5).slice(0, 8).map(p => cardHTML(p)).join("")}</div>
+  <button class="rail__arrow" data-dir="next" aria-label="Next">${I.chevR}</button></div>`;
+
+paint();
+mountShell("bag");
+</script>
+</body>
+</html>

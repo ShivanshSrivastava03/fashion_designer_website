@@ -1,0 +1,519 @@
+<title>The Collective Teardown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Lato:wght@300;400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+/* ============================================================
+   Set in the system it documents: Lato for text, a letterspaced
+   serif for display, mono for tokens. Neutrals carry a faint warm
+   bias so they sit with the one red the system allows.
+   ============================================================ */
+:root{
+  --paper:#ffffff;
+  --raise:#faf9f8;
+  --sunk:#f4f2f1;
+  --ink:#0d0c0c;
+  --body:#2a2726;
+  --muted:#6b6664;
+  --faint:#9a9391;
+  --rule:#e2dedc;
+  --rule-2:#cec9c6;
+  --accent:#c40000;
+  --accent-soft:#fbeceb;
+  --swatch-ring:rgba(0,0,0,.14);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131111;
+    --raise:#1a1817;
+    --sunk:#201d1c;
+    --ink:#f5f2f1;
+    --body:#d6d0ce;
+    --muted:#9b9491;
+    --faint:#6f6a68;
+    --rule:#2e2a29;
+    --rule-2:#3d3836;
+    --accent:#ff6a5e;
+    --accent-soft:#2a1a18;
+    --swatch-ring:rgba(255,255,255,.18);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131111;
+  --raise:#1a1817;
+  --sunk:#201d1c;
+  --ink:#f5f2f1;
+  --body:#d6d0ce;
+  --muted:#9b9491;
+  --faint:#6f6a68;
+  --rule:#2e2a29;
+  --rule-2:#3d3836;
+  --accent:#ff6a5e;
+  --accent-soft:#2a1a18;
+  --swatch-ring:rgba(255,255,255,.18);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--paper);color:var(--body);
+  font-family:Lato,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-weight:300;font-size:16px;line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{margin:0;text-wrap:balance;color:var(--ink)}
+p{margin:0}
+a{color:inherit}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+
+.shell{max-width:1180px;margin:0 auto;padding:0 28px}
+
+/* ---------- masthead ---------- */
+.mast{border-bottom:1px solid var(--rule);padding:76px 0 40px}
+.mast .eyebrow{
+  font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);
+  font-weight:400;margin-bottom:26px;
+}
+.mast h1{
+  font-family:"Cormorant Garamond",Georgia,serif;font-weight:300;
+  font-size:clamp(38px,6.2vw,74px);line-height:1.02;letter-spacing:.01em;
+}
+.mast .sub{
+  margin-top:22px;max-width:62ch;font-size:17px;line-height:1.68;color:var(--muted);
+}
+.meta{
+  display:flex;flex-wrap:wrap;gap:10px 34px;margin-top:34px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--faint);
+}
+.meta b{color:var(--body);font-weight:500}
+
+/* ---------- tech-pack row: label rail + content ---------- */
+.row{
+  display:grid;grid-template-columns:180px minmax(0,1fr);gap:0 44px;
+  border-bottom:1px solid var(--rule);padding:52px 0;
+}
+.row > .rail{position:sticky;top:24px;align-self:start}
+.rail h2{
+  font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;
+  font-family:Lato,sans-serif;color:var(--ink);
+}
+.rail p{margin-top:10px;font-size:13px;line-height:1.55;color:var(--faint)}
+.body > * + *{margin-top:26px}
+.body h3{
+  font-family:"Cormorant Garamond",Georgia,serif;font-weight:400;
+  font-size:27px;line-height:1.2;
+}
+.body h4{
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--muted);
+}
+.body p{max-width:68ch}
+.body strong{font-weight:700;color:var(--ink)}
+.lede{font-size:18px;line-height:1.66;color:var(--ink);font-weight:300;max-width:62ch}
+
+/* ---------- swatches ---------- */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:2px}
+.sw{background:var(--raise);padding:0 0 12px}
+.sw .chip{height:70px;box-shadow:inset 0 0 0 1px var(--swatch-ring)}
+.sw .n{display:block;padding:11px 12px 0;font-size:12px;color:var(--ink);font-weight:400}
+.sw .h{display:block;padding:2px 12px 0;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--faint)}
+.sw .u{display:block;padding:5px 12px 0;font-size:11px;line-height:1.45;color:var(--muted)}
+
+/* ---------- spec table ---------- */
+.tw{overflow-x:auto;border:1px solid var(--rule)}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:14px}
+th,td{text-align:left;padding:11px 16px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{
+  font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;
+  color:var(--muted);background:var(--sunk);white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:0}
+td.mono{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+td.note{color:var(--muted)}
+
+/* ---------- type specimen ---------- */
+.spec-list{border-top:1px solid var(--rule)}
+.spec{
+  display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:20px;align-items:baseline;
+  border-bottom:1px solid var(--rule);padding:15px 0;
+}
+.spec .samp{color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spec .d{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--faint);
+  text-align:right;font-variant-numeric:tabular-nums;
+}
+
+/* ---------- live component demos ---------- */
+.demo{
+  background:var(--sunk);border:1px solid var(--rule);padding:30px;
+  display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;
+}
+.demo--stack{flex-direction:column;align-items:stretch;gap:12px}
+.demo-cap{
+  font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);
+  margin-bottom:-14px;
+}
+/* replicas of the real system components */
+.r-btn{
+  display:inline-block;padding:12px 24px;text-transform:uppercase;border:1px solid #000;
+  border-radius:0;font:400 14px/22px Lato,sans-serif;letter-spacing:.5px;cursor:default;
+  background:#fff;color:#000;transition:background .3s ease,color .3s ease;
+}
+.r-btn--black{background:#000;color:#fff}
+.r-btn--white:hover{background:#000;color:#fff}
+.r-btn--black:hover{background:#1f1f1f}
+.r-size{
+  min-width:56px;height:40px;padding:0 14px;background:#fff;border:1px solid #ccc;
+  font:300 14px/38px Lato,sans-serif;color:#000;text-align:center;
+  transition:background .3s ease,color .3s ease;position:relative;
+}
+.r-size:hover{background:#000;color:#fff;border-color:#000}
+.r-size.on{background:#000;color:#fff;border-color:#f0f1f2}
+.r-size.out{color:#ccc;border-color:#e5e5e5;
+  background:linear-gradient(to top left,transparent calc(50% - .5px),#e5e5e5 50%,transparent calc(50% + .5px))}
+.r-left{position:absolute;left:0;right:0;bottom:-17px;font:300 10px/14px Lato,sans-serif;color:#e87d00}
+.r-head{
+  text-align:center;font:300 20px/26px Lato,sans-serif;text-transform:uppercase;
+  letter-spacing:.6px;color:#000;
+}
+.r-head b{font-weight:700}
+.r-toast{
+  background:#fff;border:1px solid #ededed;box-shadow:0 8px 26px -12px rgba(0,0,0,.34);
+  padding:13px 22px;font:400 14px Lato,sans-serif;color:#000;display:inline-block;
+}
+.r-sk{background:rgba(0,0,0,.11);height:1.2em;animation:pulse 2s ease-in-out .5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.r-price{font:300 14px/21px Lato,sans-serif;color:#000;display:flex;gap:8px;align-items:baseline}
+.r-price .was{color:#666;text-decoration:line-through}
+.r-price .off{color:#eb0000}
+.demo .light-ground{background:#fff;padding:26px;flex:1 1 100%;
+  box-shadow:inset 0 0 0 1px var(--rule)}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
+/* ---------- callouts ---------- */
+.flag{
+  border-left:2px solid var(--accent);background:var(--accent-soft);
+  padding:16px 20px;font-size:14.5px;line-height:1.6;color:var(--ink);
+}
+.flag b{font-weight:700}
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--rule)}
+.key{background:var(--raise);padding:18px 20px}
+.key .k{font-family:"IBM Plex Mono",monospace;font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums}
+.key .v{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.45}
+
+/* ---------- anatomy list ---------- */
+.anat{border-top:1px solid var(--rule)}
+.anat > div{border-bottom:1px solid var(--rule);padding:16px 0;
+  display:grid;grid-template-columns:210px minmax(0,1fr);gap:20px}
+.anat dt{font-size:13.5px;color:var(--ink);font-weight:400}
+.anat dd{margin:0;font-size:14px;color:var(--muted);line-height:1.6}
+
+.foot{padding:56px 0 90px;color:var(--faint);font-size:13px}
+.foot a{color:var(--accent);text-decoration:none;border-bottom:1px solid currentColor}
+
+@media (max-width:820px){
+  .row{grid-template-columns:1fr;gap:22px;padding:40px 0}
+  .row > .rail{position:static}
+  .spec{grid-template-columns:1fr;gap:4px}
+  .spec .d{text-align:left}
+  .anat > div{grid-template-columns:1fr;gap:4px}
+}
+</style>
+
+<div class="shell">
+
+  <header class="mast">
+    <div class="eyebrow">Design teardown &amp; rebuild</div>
+    <h1>The Collective,<br>taken apart.</h1>
+    <p class="sub">Everything recoverable from a 114-second screen recording of <span class="mono">thecollective.in</span>, cross-checked against the site's own compiled stylesheet — then rebuilt as a working storefront for a fictional Delhi couture house.</p>
+    <div class="meta">
+      <span><b>Source</b> 1918×864, 30fps, 114s</span>
+      <span><b>Frames read</b> 114</span>
+      <span><b>CSS audited</b> ~600 KB</span>
+      <span><b>Deliverable</b> 8-page storefront</span>
+    </div>
+  </header>
+
+  <!-- ================= METHOD ================= -->
+  <section class="row">
+    <div class="rail">
+      <h2>Method</h2>
+      <p>Two sources, cross-checked</p>
+    </div>
+    <div class="body">
+      <p class="lede">The recording gives layout, proportion and interaction. The compiled CSS gives exact values. Neither alone is enough — the site's HTML ships as an empty skeleton.</p>
+      <p>Both product and category pages bail out of server rendering (<span class="mono">BAILOUT_TO_CLIENT_SIDE_RENDERING</span>), so the downloaded HTML contains nothing but grey MUI skeleton blocks. What survived intact was the stylesheet: fourteen files, roughly 600 KB, carrying every CSS-module class for the PDP, PLP, header, footer and checkout. Numbers below marked <b>measured</b> come from that stylesheet; numbers marked <b>derived</b> are read off frames and scaled from the 1440-wide capture to the 1918-wide viewport (×1.332).</p>
+      <div class="flag"><b>One structural finding worth stating plainly:</b> the site has no design tokens. Three CSS custom properties exist in the whole codebase, all belonging to the Swiper library. Every colour, size and spacing value is hard-coded at the point of use — which is why the same grey appears as <span class="mono">#ccc</span>, <span class="mono">#cccccc</span> and <span class="mono">silver</span> in different modules.</div>
+    </div>
+  </section>
+
+  <!-- ================= COLOUR ================= -->
+  <section class="row">
+    <div class="rail">
+      <h2>Colour</h2>
+      <p>Measured by frequency across all compiled CSS</p>
+    </div>
+    <div class="body">
+      <p>A strict monochrome ladder with exactly three functional hues: red for markdown, amber for scarcity, green for success. Nothing else carries meaning. Counts are literal occurrences in the stylesheet.</p>
+      <div class="swatches">
+        <div class="sw"><div class="chip" style="background:#000"></div><span class="n">Ink</span><span class="h">#000 · 487×</span><span class="u">Type, borders, primary fill</span></div>
+        <div class="sw"><div class="chip" style="background:#fff"></div><span class="n">Surface</span><span class="h">#fff · 314×</span><span class="u">Page and card ground</span></div>
+        <div class="sw"><div class="chip" style="background:#232323"></div><span class="n">Body</span><span class="h">#232323 · 104×</span><span class="u">Card text, footer ground</span></div>
+        <div class="sw"><div class="chip" style="background:#535353"></div><span class="n">Muted</span><span class="h">#535353 · 30×</span><span class="u">Global default text colour</span></div>
+        <div class="sw"><div class="chip" style="background:#666"></div><span class="n">Muted 2</span><span class="h">#666 · 44×</span><span class="u">Product names, struck prices</span></div>
+        <div class="sw"><div class="chip" style="background:#999"></div><span class="n">Muted 3</span><span class="h">#999 · 41×</span><span class="u">Placeholders, counts</span></div>
+        <div class="sw"><div class="chip" style="background:#ccc"></div><span class="n">Line</span><span class="h">#ccc · 82×</span><span class="u">Chip and input borders</span></div>
+        <div class="sw"><div class="chip" style="background:#f8f8f8"></div><span class="n">Tint</span><span class="h">#f8f8f8 · 7×</span><span class="u">Alternating section ground</span></div>
+        <div class="sw"><div class="chip" style="background:#f0f1f2"></div><span class="n">Tint 2</span><span class="h">#f0f1f2 · 26×</span><span class="u">Selected-chip border</span></div>
+        <div class="sw"><div class="chip" style="background:#ce0000"></div><span class="n">Sale</span><span class="h">#ce0000 · 38×</span><span class="u">Nav "Sale", discount badges</span></div>
+        <div class="sw"><div class="chip" style="background:#eb0000"></div><span class="n">Sale 2</span><span class="h">#eb0000 · 5×</span><span class="u">PDP discount percentage</span></div>
+        <div class="sw"><div class="chip" style="background:#e87d00"></div><span class="n">Scarcity</span><span class="h">#e87d00 · 10×</span><span class="u">"5 left" under a size chip</span></div>
+        <div class="sw"><div class="chip" style="background:#3a833a"></div><span class="n">Success</span><span class="h">#3a833a · 10×</span><span class="u">Checkout stepper, delivery OK</span></div>
+        <div class="sw"><div class="chip" style="background:#e3e3e3"></div><span class="n">Skeleton</span><span class="h">rgba(0,0,0,.11)</span><span class="u">Loading blocks, pulse 2s</span></div>
+      </div>
+      <p><strong>Sampled from the recording</strong> to confirm: footer ground <span class="mono">#232323</span>, trust strip <span class="mono">#000</span>, skeleton <span class="mono">#E3E3E3</span> — all three match the stylesheet exactly.</p>
+    </div>
+  </section>
+
+  <!-- ================= TYPE ================= -->
+  <section class="row">
+    <div class="rail">
+      <h2>Type</h2>
+      <p>Four weights of one family, plus a wordmark serif</p>
+    </div>
+    <div class="body">
+      <p>Self-hosted Lato in four cuts, declared as four separate families rather than four weights of one — <span class="mono">LatoLight</span>, <span class="mono">LatoRegular</span>, <span class="mono">LatoSemiBold</span>, <span class="mono">LatoBold</span>. Light is a first-class UI weight here, not an accent: it carries every price, size label and description on the site.</p>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Family</th><th>Weight</th><th>Rules</th><th>Carries</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">LatoRegular</td><td class="mono">400</td><td class="mono">196</td><td class="note">Nav, brand names, headings, buttons</td></tr>
+            <tr><td class="mono">LatoLight</td><td class="mono">300</td><td class="mono">125</td><td class="note">Prices, sizes, descriptions, section subtitles</td></tr>
+            <tr><td class="mono">LatoBold</td><td class="mono">700</td><td class="mono">42</td><td class="note">Footer headings, emphasis</td></tr>
+            <tr><td class="mono">LatoSemiBold</td><td class="mono">600</td><td class="mono">4</td><td class="note">The bold half of a section heading</td></tr>
+            <tr><td class="mono">Futura Md BT</td><td class="mono">500</td><td class="mono">1</td><td class="note">Declared, effectively unused</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Scale</h4>
+      <p>A nine-step scale is defined as utility classes on every component — <span class="mono">fs-49 / 42 / 35 / 28 / 21 / 18 / 16 / 14 / 12</span> — but the interface lives almost entirely in the bottom four steps. The top of the scale is essentially dead weight.</p>
+      <div class="spec-list">
+        <div class="spec"><span class="samp" style="font-family:Lato;font-weight:400;font-size:12px;letter-spacing:.6px;text-transform:uppercase">Hackett London · brand line, card tags</span><span class="d">12px / 136 rules</span></div>
+        <div class="spec"><span class="samp" style="font-family:Lato;font-weight:300;font-size:14px">₹22,500 — prices, sizes, body copy</span><span class="d">14px / 190 rules</span></div>
+        <div class="spec"><span class="samp" style="font-family:Lato;font-weight:400;font-size:16px">Select Size · PDP headings and CTAs</span><span class="d">16px / 105 rules</span></div>
+        <div class="spec"><span class="samp" style="font-family:Lato;font-weight:300;font-size:20px;text-transform:uppercase;letter-spacing:.6px">Trending Brands</span><span class="d">20px / section headings</span></div>
+        <div class="spec"><span class="samp" style="font-family:Lato;font-weight:400;font-size:21px">Casual Shirts For Men</span><span class="d">21px / PLP H1</span></div>
+        <div class="spec"><span class="samp" style="font-family:Lato;font-weight:300;font-size:28px;color:var(--faint)">28 / 35 / 42 / 49 — defined, unused</span><span class="d">28–49px / 0 real uses</span></div>
+      </div>
+
+      <div class="flag"><b>Letter-spacing is not systematic.</b> Values run <span class="mono">.07px .08px .11px .12px .14px .16px .2px .21px .22px .28px .34px .38px</span> — sub-pixel figures tuned per component. This is Figma export residue, not a scale. Rebuilding, round to <span class="mono">0 / .2px / .5px / 1.4px</span> and nothing is lost.</div>
+    </div>
+  </section>
+
+  <!-- ================= SHAPE & MOTION ================= -->
+  <section class="row">
+    <div class="rail">
+      <h2>Shape &amp; motion</h2>
+      <p>The part that carries the luxury read</p>
+    </div>
+    <div class="body">
+      <div class="keys">
+        <div class="key"><div class="k">0</div><div class="v">Border-radius on 83 rules — the dominant value. Sharp corners are the signature.</div></div>
+        <div class="key"><div class="k">.3s ease</div><div class="v">Every transition on the site. No custom easing curves anywhere.</div></div>
+        <div class="key"><div class="k">scale(.98)</div><div class="v">Button active state. The only transform in the button system.</div></div>
+        <div class="key"><div class="k">3:4</div><div class="v">Product image ratio on PLP and cards; 4:5 on homepage tiles.</div></div>
+      </div>
+      <p>4px and 2px radii appear only on toasts and quick-filter pills; 50% on avatars and count badges. Everything structural is square.</p>
+    </div>
+  </section>
+
+  <!-- ================= GRID ================= -->
+  <section class="row">
+    <div class="rail">
+      <h2>Grid &amp; breakpoints</h2>
+      <p>Measured from CSS; proportions derived from frames</p>
+    </div>
+    <div class="body">
+      <div class="tw">
+        <table>
+          <thead><tr><th>Context</th><th>Columns</th><th>Gap</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr><td>PLP product grid</td><td class="mono">3 × max-width:32%</td><td class="mono">20px row / 24px col</td><td class="note">measured</td></tr>
+            <tr><td>PLP two-tile mode</td><td class="mono">2 × max-width:50%</td><td class="mono">21px / 16px</td><td class="note">measured</td></tr>
+            <tr><td>PLP sidebar</td><td class="mono">~300px + fluid</td><td class="mono">24px</td><td class="note">derived</td></tr>
+            <tr><td>PDP</td><td class="mono">~57% gallery / 37% panel</td><td class="mono">~56px</td><td class="note">derived</td></tr>
+            <tr><td>PDP gallery</td><td class="mono">2 columns</td><td class="mono">8px</td><td class="note">derived</td></tr>
+            <tr><td>Homepage rails</td><td class="mono">4 visible</td><td class="mono">8px slide padding</td><td class="note">measured</td></tr>
+            <tr><td>Editorial mosaic</td><td class="mono">12-col, 9 named areas</td><td class="mono">8px</td><td class="note">measured</td></tr>
+            <tr><td>Section rhythm</td><td class="mono">44px top / 37px bottom</td><td class="mono">41px to rail</td><td class="note">measured</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Breakpoints are inconsistent.</strong> The working pair is <span class="mono">min-width:1025px</span> (59 rules) and <span class="mono">max-width:1180px</span> (48 rules), with a tablet band at <span class="mono">740–1180px</span>. Stray queries also exist at 768, 980, 1024, 1199, 1280, 1440 and 1920. Treat 1180 and 1024 as the real system and ignore the rest.</p>
+    </div>
+  </section>
+
+  <!-- ================= COMPONENTS ================= -->
+  <section class="row">
+    <div class="rail">
+      <h2>Components</h2>
+      <p>Live replicas — hover them</p>
+    </div>
+    <div class="body">
+      <h3>Buttons</h3>
+      <p>Two variants, no more. The system's core idiom is an <strong>inverted pair</strong>: the primary action is a black fill, the secondary is white with a black hairline. On the PDP that reads Buy Now / Add To Bag.</p>
+      <div class="demo">
+        <span class="demo-cap">CustomButton — 12px 24px, 1px border, radius 0, uppercase, .3s ease</span>
+        <div class="light-ground" style="display:flex;gap:14px;flex-wrap:wrap">
+          <span class="r-btn r-btn--black">Buy Now</span>
+          <span class="r-btn r-btn--white">Add To Bag</span>
+          <span class="r-btn r-btn--white" style="opacity:.6">Disabled</span>
+        </div>
+      </div>
+
+      <h3>Size chips</h3>
+      <p>The same inversion governs selection: unselected is white on a <span class="mono">#ccc</span> hairline; hover and selected are both solid black. Low stock appears in amber below the chip, revealed on hover and pinned when selected.</p>
+      <div class="demo">
+        <span class="demo-cap">36–40px tall, 8px gaps, sold-out struck through</span>
+        <div class="light-ground" style="display:flex;gap:8px;flex-wrap:wrap;padding-bottom:44px">
+          <span class="r-size">XS</span>
+          <span class="r-size">S</span>
+          <span class="r-size out">M</span>
+          <span class="r-size on">L<span class="r-left">5 left</span></span>
+          <span class="r-size">XL</span>
+        </div>
+      </div>
+
+      <h3>Section heading</h3>
+      <p>Every homepage band uses the same construction: first word semibold, remainder light, whole thing uppercase and centred at 20px. It is the site's one piece of typographic personality.</p>
+      <div class="demo">
+        <div class="light-ground"><div class="r-head"><b>Trending</b> Brands</div></div>
+      </div>
+
+      <h3>Price block</h3>
+      <p>Always centred on cards, left-aligned on the PDP. Order is fixed: current, then struck MRP, then percentage in red.</p>
+      <div class="demo">
+        <div class="light-ground"><span class="r-price"><span>₹15,750</span><span class="was">₹26,250</span><span class="off">40% off</span></span></div>
+      </div>
+
+      <h3>Toast &amp; skeleton</h3>
+      <p>Feedback is a plain white slab with a hairline border, not a coloured banner — "Please select size", "Product Added to Shopping Bag". Loading states are MUI skeletons at <span class="mono">rgba(0,0,0,.11)</span>, pulsing 1 → .4 → 1 over 2s with a 0.5s delay.</p>
+      <div class="demo">
+        <div class="light-ground" style="display:flex;flex-direction:column;gap:18px">
+          <span class="r-toast">Product Added to Shopping Bag</span>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span class="r-sk" style="width:38%"></span>
+            <span class="r-sk" style="width:62%"></span>
+            <span class="r-sk" style="height:120px"></span>
+          </div>
+        </div>
+      </div>
+
+      <h3>Product card</h3>
+      <p>Centred text throughout, three lines: <strong>BRAND</strong> uppercase at 14px in <span class="mono">#000</span>, product name at 14px in <span class="mono">#666</span> truncated with ellipsis, then the price row. Two behaviours on hover, both confirmed in the recording:</p>
+      <div class="anat">
+        <div><dt>Border appears</dt><dd><span class="mono">1px solid #ccc</span> on the card, plus a light grey ground.</dd></div>
+        <div><dt>Brand line hides</dt><dd>The brand row is set to <span class="mono">display:none</span> and a size row plus price take its place over the foot of the image.</dd></div>
+        <div><dt>Express-delivery mark</dt><dd>A small truck glyph pinned top-left; wishlist heart top-right at 16–20px inset.</dd></div>
+        <div><dt>Placeholder ground</dt><dd>Cards carry a background image (<span class="mono">Product-Card.png</span>) behind the photo rather than a flat colour.</dd></div>
+      </div>
+      <div class="flag"><b>Three separate card implementations ship in the bundle</b> — <span class="mono">PlpProductCard</span>, <span class="mono">widgetProductCard</span> and <span class="mono">revampWidgetProductCard</span> (plus a desktop variant), together about 1,580 rules. Real duplication, worth collapsing to one.</div>
+    </div>
+  </section>
+
+  <!-- ================= PAGE ANATOMY ================= -->
+  <section class="row">
+    <div class="rail">
+      <h2>Page anatomy</h2>
+      <p>Section by section, as the recording walks it</p>
+    </div>
+    <div class="body">
+
+      <h3>Header — two rows, fixed, 100px</h3>
+      <div class="anat">
+        <div><dt>Row 1 · ~56px</dt><dd>Left: pin icon + "Stores", hairline divider, phone icon + number. Centre: letterspaced wordmark. Right: search, store, account, wishlist, bag, then the parent-group logo.</dd></div>
+        <div><dt>Row 2 · ~44px</dt><dd>Ten nav items, centred, 15px, ~34px apart. "Sale" is the only coloured item. Active and hovered items take a 1px underline at ~6px offset.</dd></div>
+        <div><dt>Mega menu</dt><dd>Opens on hover, full-bleed white panel: three link columns divided by hairlines (heading 16px regular, items 14px light at ~28px rhythm) plus a ~470×400 promo tile with an outlined SHOP NOW.</dd></div>
+        <div><dt>Bag badge</dt><dd>Black circle, white numeral at 7–9px, pinned to the bag glyph. Appears the instant an item is added.</dd></div>
+      </div>
+
+      <h3>Hero — full-bleed video carousel</h3>
+      <p>Autoplaying muted loops, one per brand campaign, with the headline burned into the footage rather than set in HTML. A chevron sits centre-bottom as a scroll affordance. The first slide in the recording carries a ~16px corner radius while later ones are square — an inconsistency, not a pattern.</p>
+
+      <h3>Homepage — alternating bands</h3>
+      <div class="anat">
+        <div><dt>Rhythm</dt><dd>White band, then <span class="mono">#f8f8f8</span> band, repeating. Padding <span class="mono">44px 0 37px</span>, rail inset <span class="mono">41px 24px 0</span>.</dd></div>
+        <div><dt>Bands observed</dt><dd>New In → Trending Brands → Trending Now → Styles Recommended For You → Shop By Category → footer.</dd></div>
+        <div><dt>Rails</dt><dd>Four cards visible, arrows as 20×27 translucent white squares pinned to the edges.</dd></div>
+        <div><dt>Category tiles</dt><dd>Four across, label in white ~21px light near the foot over a bottom-up scrim.</dd></div>
+      </div>
+
+      <h3>PLP</h3>
+      <div class="anat">
+        <div><dt>Header</dt><dd>Breadcrumb, then H1 at 21px with an item count in small grey beside it.</dd></div>
+        <div><dt>Sub-category chips</dt><dd>Bordered rectangles, radius 0, centred row — a second navigation layer above the filter bar.</dd></div>
+        <div><dt>Filter bar</dt><dd>Sticky under the header. "Filters" left, a Size dropdown, then "Sort by :" and a two-state grid-density toggle right.</dd></div>
+        <div><dt>Sidebar</dt><dd>Accordion facets with <span class="mono">+</span> affordances, uppercase 14px labels on hairline dividers.</dd></div>
+        <div><dt>Load more</dt><dd>A thin progress rule, "You've viewed 24 of 1041 products", then an outlined VIEW MORE. Not pagination.</dd></div>
+        <div><dt>Tail</dt><dd>A block of SEO prose above the footer.</dd></div>
+      </div>
+
+      <h3>PDP</h3>
+      <div class="anat">
+        <div><dt>Gallery</dt><dd>Two-column grid of stills, scrolling independently. Hover opens a square lens and a magnified panel to the right.</dd></div>
+        <div><dt>Buy panel</dt><dd>Sticky. Brand uppercase 16px → product name → price row → "(Inclusive of all Taxes)" → "Find my perfect size" → Select Size with a Size Chart link → Buy Now / Add To Bag → pincode input → returns line → three accordions.</dd></div>
+        <div><dt>Action stack</dt><dd>Wishlist, share and hanger icons stacked vertically at the panel's right edge, 24px, ~24px apart.</dd></div>
+        <div><dt>Share</dt><dd>Expands by animating <span class="mono">max-height</span> 0 → 125px over .25s.</dd></div>
+        <div><dt>Similar products</dt><dd>Rail below, each card carrying its own ADD TO BAG and an inline SELECT SIZE state with unavailable sizes struck out.</dd></div>
+      </div>
+
+      <h3>Checkout</h3>
+      <div class="anat">
+        <div><dt>Chrome</dt><dd>Header collapses to the wordmark alone — no nav, no icons.</dd></div>
+        <div><dt>Stepper</dt><dd>Shopping Bag → Address → Payment. Completed steps are filled green circles with a white tick; the connecting rule turns green behind them.</dd></div>
+        <div><dt>Layout</dt><dd>Items left, a <span class="mono">#f8f8f8</span> Order Summary panel right, with Apply Coupon and a full-width black PLACE ORDER beneath it.</dd></div>
+        <div><dt>Line item</dt><dd>Thumbnail, brand, price, then Size and Qty as bordered selects, a returns note, and an × to remove.</dd></div>
+        <div><dt>Auth</dt><dd>Placing an order opens a centred modal over a scrim: "Welcome to" + wordmark, phone field, and a SEND OTP button disabled until ten digits are entered.</dd></div>
+      </div>
+
+      <h3>Footer</h3>
+      <p>A black trust strip — 100% Authentic Products · Secure Payment · Quality Checked — sits above a <span class="mono">#232323</span> footer of five link columns plus social icons, then an about block with the parent logo and a copyright line.</p>
+    </div>
+  </section>
+
+  <!-- ================= THE BUILD ================= -->
+  <section class="row">
+    <div class="rail">
+      <h2>The rebuild</h2>
+      <p>What was actually shipped</p>
+    </div>
+    <div class="body">
+      <p class="lede">The system above, applied to a fictional Delhi couture house — <strong>Vrinda Sethi</strong> — with a full purchase path and a designer's-story section the original has no equivalent for.</p>
+      <div class="keys">
+        <div class="key"><div class="k">8</div><div class="v">Pages: home, women, men, product, bag, order, atelier, plus the listing engine shared by both categories</div></div>
+        <div class="key"><div class="k">29</div><div class="v">Products across 8 sub-categories, each with real copy, fabric, craft and per-size stock</div></div>
+        <div class="key"><div class="k">34/34</div><div class="v">Self-test assertions passing over catalogue integrity, cart maths and render helpers</div></div>
+        <div class="key"><div class="k">48/48</div><div class="v">Responsive checks clean — every page at 360, 390, 768, 1024, 1180 and 1440</div></div>
+      </div>
+      <h4>Fidelity to the source</h4>
+      <p>Same Lato cuts, self-hosted from the original build. Same colour ladder, same radius-0 shape language, same <span class="mono">.3s ease</span>, same inverted button pair, same mixed-weight section headings, same sticky-filter PLP and sticky-panel PDP, same three-step checkout with the green stepper, same white-slab toasts.</p>
+      <h4>Deliberate departures</h4>
+      <div class="anat">
+        <div><dt>Tokens instead of literals</dt><dd>The whole palette and scale sit in <span class="mono">:root</span> custom properties. Retheming is one block, not a search-and-replace.</dd></div>
+        <div><dt>One product card</dt><dd>Rather than the original's three-and-a-half implementations.</dd></div>
+        <div><dt>Two breakpoints</dt><dd>1180 and 1024, consistently, instead of nine.</dd></div>
+        <div><dt>A display serif</dt><dd>Cormorant Garamond for the wordmark and editorial headlines — a single-designer house needs a voice the multi-brand retailer deliberately avoids.</dd></div>
+        <div><dt>The Atelier</dt><dd>An entire page with no counterpart in the source: the designer's story, five named craft clusters, a five-stage made-to-measure process, press and appointments.</dd></div>
+        <div><dt>Mobile PDP gallery</dt><dd>A swipeable snap carousel rather than a stack of six full-width images.</dd></div>
+      </div>
+      <div class="flag"><b>Everything is fictional and local.</b> The house, its products, prices and stock are invented. Photography and footage are Pexels-licensed and stored in the repo — no runtime network calls. Checkout takes no payment and places no real order; bag, wishlist and address live only in <span class="mono">localStorage</span>.</div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p>Teardown of <span class="mono">thecollective.in</span> from a 114-second capture plus its compiled stylesheet. Values marked <b>measured</b> are literal from that CSS; values marked <b>derived</b> are scaled from frames and carry roughly ±2px. Build and this document produced for design review.</p>
+  </footer>
+
+</div>

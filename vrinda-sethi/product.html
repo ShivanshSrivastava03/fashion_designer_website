@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vrinda Sethi</title>
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<div id="site-header"></div>
+
+<main>
+  <nav class="crumb" id="crumb"></nav>
+  <div class="pdp">
+    <div class="gallery" id="gallery"></div>
+    <div class="buy" id="buy"></div>
+  </div>
+
+  <section class="section tint" id="similar-wrap">
+    <div class="section-head"><h2><b>Similar</b> Pieces</h2></div>
+    <div id="similar"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2><b>Complete</b> The Look</h2></div>
+    <div id="ctl"></div>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+const p = byId(qs("id")) || PRODUCTS[0];
+document.title = `${p.name} — Vrinda Sethi`;
+
+let chosenSize = null;
+
+/* ---------------- Breadcrumb ---------------- */
+document.getElementById("crumb").innerHTML = `
+  <a href="index.html">Home</a><span class="sep">|</span>
+  <a href="${p.cat}.html">${TAXONOMY[p.cat].label}</a><span class="sep">|</span>
+  <a href="${p.cat}.html?sub=${p.sub}">${SUB_LABEL[p.sub]}</a><span class="sep">|</span>
+  <span class="cur">${p.name}</span>`;
+
+/* ---------------- Gallery ---------------- */
+/* Two-column grid of the style's own shots. A single-image style spans the
+   full width rather than leaving a hole; an odd count lets the last shot run wide. */
+const shots = p.images;
+document.getElementById("gallery").innerHTML = shots.map((s, i) => {
+  const wide = shots.length === 1 || (shots.length % 2 === 1 && i === shots.length - 1);
+  return `<figure ${wide ? 'style="grid-column:1/-1;aspect-ratio:16/11"' : ""}>
+    <img src="${img(s)}" alt="${p.name} — view ${i + 1}" ${i ? 'loading="lazy"' : ""}></figure>`;
+}).join("");
+
+/* mouse-follow zoom origin, mirroring the reference's lens behaviour */
+document.querySelectorAll(".gallery figure").forEach(fig => {
+  const im = fig.querySelector("img");
+  fig.addEventListener("mousemove", e => {
+    const r = fig.getBoundingClientRect();
+    im.style.transformOrigin = `${((e.clientX - r.left) / r.width) * 100}% ${((e.clientY - r.top) / r.height) * 100}%`;
+  });
+  fig.addEventListener("mouseleave", () => { im.style.transformOrigin = "center"; });
+});
+
+/* ---------------- Buy panel ---------------- */
+const d = discountPct(p);
+document.getElementById("buy").innerHTML = `
+  <div class="buy__top">
+    <div>
+      <div class="buy__brand">${p.line}</div>
+      <div class="buy__name">${p.name}</div>
+      <div class="buy__price">
+        <span class="now">${inr(p.price)}</span>
+        ${d ? `<span class="was">${inr(p.mrp)}</span><span class="off">${d}% off</span>` : ""}
+      </div>
+      <span class="buy__tax">(Inclusive of all taxes)</span>
+    </div>
+    <div class="buy__acts">
+      <button id="wishBtn" class="${Wish.has(p.id) ? "is-on" : ""}" aria-label="Save">${I.heart}</button>
+      <button id="shareBtn" aria-label="Share">${I.share}</button>
+      <button id="mtmBtn" aria-label="Made to measure">${I.hanger}</button>
+    </div>
+  </div>
+
+  <div class="sizerow">
+    <h3>Select Size</h3>
+    <button class="chart" id="chartBtn">Size Chart</button>
+  </div>
+  <div class="sizes has-left" id="sizes">
+    ${p.sizes.map(s => {
+      const left = p.stock[s];
+      return `<button class="size ${left ? "" : "out"}" data-size="${s}" ${left ? "" : "disabled"}>
+        ${s}${left && left <= 3 ? `<span class="size__left">${left} left</span>` : ""}</button>`;
+    }).join("")}
+  </div>
+
+  <div class="buy__ctas">
+    <button class="btn btn--black btn--lg btn--block" id="buyNow">Buy Now</button>
+    <button class="btn btn--white btn--lg btn--block" id="addBag">Add To Bag</button>
+  </div>
+
+  <div class="pincode">
+    <h3>Delivery Details</h3>
+    <div class="pincode__box">
+      <input id="pin" placeholder="Enter delivery pincode" maxlength="6" inputmode="numeric">
+      <button id="pinGo" aria-label="Check">${I.arrowR}</button>
+    </div>
+    <p class="pincode__msg" id="pinMsg"></p>
+  </div>
+
+  <div class="returns">${I.ret}<span>15 days returns / exchange available &nbsp; <a class="link-u" id="retInfo">More Info</a></span></div>
+
+  <div class="acc">
+    <div class="acc__item is-open">
+      <button class="acc__btn">Product Description <i>−</i></button>
+      <div class="acc__body"><div><p>${p.desc}</p></div></div>
+    </div>
+    <div class="acc__item">
+      <button class="acc__btn">Product Specifications <i>+</i></button>
+      <div class="acc__body"><div><dl class="spec">
+        <dt>Style Code</dt><dd>${p.id}</dd>
+        <dt>Line</dt><dd>${p.line}</dd>
+        <dt>Colour</dt><dd>${p.colour}</dd>
+        <dt>Fabric</dt><dd>${p.fabric}</dd>
+        <dt>Craft</dt><dd>${p.craft}</dd>
+        <dt>Category</dt><dd>${SUB_LABEL[p.sub]}</dd>
+        <dt>Care</dt><dd>Dry clean only. Store flat, wrapped in muslin.</dd>
+        <dt>Country of Origin</dt><dd>India</dd>
+      </dl></div></div>
+    </div>
+    <div class="acc__item">
+      <button class="acc__btn">Manufacturer &amp; Care <i>+</i></button>
+      <div class="acc__body"><div><dl class="spec">
+        <dt>MRP</dt><dd>${inr(p.mrp)} (inclusive of all taxes)</dd>
+        <dt>Net Quantity</dt><dd>1</dd>
+        <dt>Marketed By</dt><dd>Vrinda Sethi Design LLP, A-42 Okhla Phase II, New Delhi 110020</dd>
+        <dt>Client Care</dt><dd>${BRAND.phone}, care@vrindasethi.demo</dd>
+      </dl></div></div>
+    </div>
+  </div>`;
+
+wireAccordions(document.getElementById("buy"));
+
+/* ---------------- Size selection ---------------- */
+document.getElementById("sizes").addEventListener("click", e => {
+  const b = e.target.closest(".size"); if (!b || b.disabled) return;
+  document.querySelectorAll(".size").forEach(s => s.classList.remove("is-on"));
+  b.classList.add("is-on");
+  chosenSize = b.dataset.size;
+});
+
+function requireSize(){
+  if (!chosenSize) {
+    toast("Please select a size");
+    document.getElementById("sizes").animate(
+      [{ transform: "translateX(0)" }, { transform: "translateX(-6px)" },
+       { transform: "translateX(6px)" }, { transform: "translateX(0)" }],
+      { duration: 260 });
+    return false;
+  }
+  return true;
+}
+
+document.getElementById("addBag").onclick = () => {
+  if (!requireSize()) return;
+  Cart.add(p.id, chosenSize);
+  toast("Product added to shopping bag");
+};
+document.getElementById("buyNow").onclick = () => {
+  if (!requireSize()) return;
+  Cart.add(p.id, chosenSize);
+  location.href = "bag.html";
+};
+
+/* ---------------- Wishlist / share / MTM ---------------- */
+document.getElementById("wishBtn").onclick = e => {
+  const on = Wish.toggle(p.id);
+  e.currentTarget.classList.toggle("is-on", on);
+  toast(on ? "Saved to your wishlist" : "Removed from wishlist");
+};
+document.getElementById("shareBtn").onclick = () => {
+  navigator.clipboard?.writeText(location.href).then(
+    () => toast("Link copied to clipboard"),
+    () => toast("Link: " + location.href));
+};
+document.getElementById("mtmBtn").onclick = () => openModal(`
+  <h3>Made To Measure</h3>
+  <p class="lead" style="margin-top:12px">${p.name} can be cut to your measurements in any of the house colours. Commissions begin with a fitting at the Delhi or Mumbai atelier and run eight to fourteen weeks.</p>
+  <div class="field"><label>Name</label><input placeholder="Your name"></div>
+  <div class="field"><label>Phone</label><input placeholder="Mobile number" maxlength="10"></div>
+  <div class="field"><label>Preferred atelier</label><select><option>New Delhi — Mehrauli</option><option>Mumbai — Kala Ghoda</option></select></div>
+  <button class="btn btn--black btn--block" onclick="toast('Request noted — the atelier will call you back');">Request a fitting</button>`);
+
+document.getElementById("retInfo").onclick = () => openModal(`
+  <h3>Returns &amp; Exchange</h3>
+  <p class="lead" style="margin-top:12px">Prêt and in-stock couture may be returned within 15 days in original condition with tags attached. Bridal and made-to-measure commissions are final sale, as each is cut to a single client's measurements.</p>
+  <p class="lead">Alterations on full-price pieces are complimentary for ninety days from delivery.</p>`);
+
+/* ---------------- Size chart ---------------- */
+const CHART_W = [["XS","32","26","35"],["S","34","28","37"],["M","36","30","39"],["L","38","32","41"],["XL","40","34","43"]];
+const CHART_M = [["38","38","32","39"],["40","40","34","40"],["42","42","36","41"],["44","44","38","42"],["46","46","40","43"]];
+document.getElementById("chartBtn").onclick = () => {
+  const rows = p.cat === "women" ? CHART_W : CHART_M;
+  const h = p.cat === "women" ? ["Size","Bust (in)","Waist (in)","Hip (in)"] : ["Size","Chest (in)","Waist (in)","Length (in)"];
+  openModal(`<h3>Size Chart — ${TAXONOMY[p.cat].label}</h3>
+    <p class="lead" style="margin:10px 0 18px">Measurements are body measurements, not garment. The house block runs close through the waist; between sizes, take the larger.</p>
+    <table><thead><tr>${h.map(x => `<th>${x}</th>`).join("")}</tr></thead>
+    <tbody>${rows.map(r => `<tr>${r.map(x => `<td>${x}</td>`).join("")}</tr>`).join("")}</tbody></table>`);
+};
+
+/* ---------------- Pincode check ---------------- */
+document.getElementById("pinGo").onclick = () => {
+  const v = document.getElementById("pin").value.replace(/\D/g, "");
+  const m = document.getElementById("pinMsg");
+  if (v.length !== 6) { m.className = "pincode__msg bad"; m.textContent = "Enter a valid 6-digit pincode."; return; }
+  const days = 3 + (parseInt(v.slice(-1), 10) % 5);
+  const eta = new Date(Date.now() + days * 864e5)
+    .toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+  m.className = "pincode__msg ok";
+  m.textContent = `Delivers by ${eta} · Free shipping · Cash on delivery available`;
+};
+document.getElementById("pin").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("pinGo").click(); });
+
+/* ---------------- Similar + complete the look ---------------- */
+const similar = PRODUCTS.filter(x => x.id !== p.id && x.cat === p.cat && x.sub === p.sub);
+const fill    = PRODUCTS.filter(x => x.id !== p.id && x.cat === p.cat && x.sub !== p.sub);
+const simList = [...similar, ...fill].slice(0, 8);
+const ctlList = PRODUCTS.filter(x => x.cat !== p.cat).slice(0, 8);
+
+const rail = (items) => `<div class="rail" style="padding:41px 24px 0">
+  <button class="rail__arrow" data-dir="prev" aria-label="Previous">${I.chevL}</button>
+  <div class="rail__track">${items.map(x => cardHTML(x)).join("")}</div>
+  <button class="rail__arrow" data-dir="next" aria-label="Next">${I.chevR}</button></div>`;
+
+document.getElementById("similar").innerHTML = rail(simList);
+document.getElementById("ctl").innerHTML = rail(ctlList);
+
+mountShell(p.cat);
+</script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Atelier — Vrinda Sethi</title>
+<meta name="description" content="Vrinda Sethi's Delhi atelier: 140 karigars, five craft clusters, and a made-to-measure practice built on three fittings.">
+<link rel="stylesheet" href="assets/css/main.css">
+<style>
+  /* page-local: the editorial layouts that only appear here */
+  .hero--page{height:70vh;min-height:460px}
+  .facts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-hair);
+         max-width:1500px;margin:0 auto;border:1px solid var(--line-hair)}
+  .fact{background:#fff;padding:38px 26px;text-align:center}
+  .fact b{display:block;font-family:Cormorant,serif;font-weight:300;font-size:46px;line-height:1;color:var(--ink)}
+  .fact span{display:block;font-family:LatoLight;font-size:13px;letter-spacing:1.4px;text-transform:uppercase;
+             color:var(--muted-2);margin-top:12px}
+  .crafts{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding:0 var(--gutter)}
+  .craft{background:#fff}
+  .craft__img{aspect-ratio:3/2;overflow:hidden}
+  .craft__img img{width:100%;height:100%;object-fit:cover;transition:transform .8s cubic-bezier(.2,.7,.3,1)}
+  .craft:hover .craft__img img{transform:scale(1.05)}
+  .craft__body{padding:22px 4px 0}
+  .craft h3{font-family:LatoRegular;font-weight:400;font-size:16px;color:var(--ink);letter-spacing:.3px}
+  .craft .where{font-family:LatoLight;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted-3);margin:6px 0 12px}
+  .craft p{font-family:LatoLight;font-size:14px;line-height:22px;color:var(--muted)}
+  .steps{max-width:920px;margin:0 auto;padding:0 var(--gutter)}
+  .stepline{display:grid;grid-template-columns:82px 1fr;gap:30px;padding:30px 0;border-bottom:1px solid var(--line-hair)}
+  .stepline:last-child{border-bottom:0}
+  .stepline b{font-family:Cormorant,serif;font-weight:300;font-size:42px;line-height:1;color:var(--line)}
+  .stepline h3{font-family:LatoRegular;font-weight:400;font-size:16px;color:var(--ink);margin-bottom:8px}
+  .stepline p{font-family:LatoLight;font-size:14px;line-height:23px;color:var(--muted);max-width:62ch}
+  .press{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:1300px;margin:0 auto;padding:0 var(--gutter)}
+  .press blockquote{font-family:Cormorant,serif;font-weight:300;font-size:22px;line-height:1.42;color:var(--ink);margin-bottom:16px}
+  .press cite{font-family:LatoLight;font-style:normal;font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted-2)}
+  .stores{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:1300px;margin:0 auto;padding:0 var(--gutter)}
+  .store{border:1px solid var(--line-hair)}
+  .store img{aspect-ratio:16/9;object-fit:cover;width:100%}
+  .store__b{padding:26px}
+  .store h3{font-family:LatoRegular;font-weight:400;font-size:16px;color:var(--ink);margin-bottom:10px}
+  .store p{font-family:LatoLight;font-size:14px;line-height:23px;color:var(--muted)}
+  @media (max-width:1024px){
+    .facts{grid-template-columns:1fr 1fr}
+    .crafts,.press,.stores{grid-template-columns:1fr}
+    .stepline{grid-template-columns:56px 1fr;gap:18px}
+  }
+</style>
+</head>
+<body>
+<div id="site-header"></div>
+
+<main>
+  <!-- ======================= PAGE HERO ======================= -->
+  <section class="hero hero--page">
+    <div class="hero__slide is-active" style="background-image:url(assets/img/editorial/poster-atelier.jpg)">
+      <video src="assets/video/atelier.mp4" poster="assets/img/editorial/poster-atelier.jpg" autoplay muted loop playsinline></video>
+    </div>
+    <div class="hero__copy">
+      <div class="hero__eyebrow">The House</div>
+      <h1 class="hero__title">The<br><em>Atelier</em></h1>
+      <p class="hero__text">A-42 Okhla Phase II, New Delhi. Four rooms, a hundred and forty pairs of hands, and one rule about what gets shown.</p>
+    </div>
+  </section>
+
+  <!-- ======================= THE DESIGNER ======================= -->
+  <section class="split reveal" style="margin-top:0">
+    <div class="split__media"><img class="portrait" src="assets/img/editorial/designer-portrait.jpg" alt="Vrinda Sethi"></div>
+    <div class="split__copy">
+      <div class="eyebrow">Vrinda Sethi — Founder &amp; Creative Director</div>
+      <h2>“I learned to sew<br>before I learned<br>to draw.”</h2>
+      <p>Vrinda grew up in the back room of her grandmother's tailoring shop off Kinari Bazaar, Chandni Chowk, watching gota-patti go onto other people's wedding clothes. She read fashion design at NIFT Delhi, spent three years cutting for a Mumbai couture house, and came back to Delhi in 2009 with four karigars, one pit loom and a workroom above a car-parts shop.</p>
+      <p>The house now dresses roughly six hundred brides and grooms a year and still refuses to license its name. Vrinda approves every embroidery sample personally — a bottleneck she has been advised to remove eleven times and has not.</p>
+      <p style="font-family:Cormorant,serif;font-size:24px;color:var(--ink);margin-top:26px">Vrinda Sethi</p>
+    </div>
+  </section>
+
+  <!-- ======================= FACTS ======================= -->
+  <section style="padding:56px 24px" class="reveal">
+    <div class="facts">
+      <div class="fact"><b>2009</b><span>Founded</span></div>
+      <div class="fact"><b>140</b><span>Karigars on staff</span></div>
+      <div class="fact"><b>5</b><span>Craft clusters</span></div>
+      <div class="fact"><b>900</b><span>Hours — one Noor lehenga</span></div>
+    </div>
+  </section>
+
+  <!-- ======================= THE CRAFTS ======================= -->
+  <section class="section tint" id="craft">
+    <div class="section-head reveal">
+      <h2><b>The</b> Crafts</h2>
+      <p class="sub">Five clusters, paid by the piece</p>
+    </div>
+    <div style="height:40px"></div>
+    <div class="crafts reveal">
+      <article class="craft">
+        <div class="craft__img"><img src="assets/img/editorial/atelier-zardozi.jpg" alt="Zardozi frame"></div>
+        <div class="craft__body">
+          <h3>Zardozi &amp; Dabka</h3>
+          <p class="where">Delhi — in house</p>
+          <p>Metal-wire embroidery worked on a wooden adda frame with a hooked ari needle. Twelve karigars sit to a frame on the largest bridal pieces. The house keeps this craft entirely in-house because the tension of the wire cannot be inspected remotely.</p>
+        </div>
+      </article>
+      <article class="craft">
+        <div class="craft__img"><img src="assets/img/editorial/atelier-kashida.jpg" alt="Chikankari detail"></div>
+        <div class="craft__body">
+          <h3>Chikankari</h3>
+          <p class="where">Lucknow — 34 karigars</p>
+          <p>Shadow work in untwisted cotton thread — murri, phanda, jaali and bakhiya stitches. The jaali is not cut; threads are teased apart with a needle so the fabric is never weakened. One kurta takes six weeks.</p>
+        </div>
+      </article>
+      <article class="craft">
+        <div class="craft__img"><img src="assets/img/editorial/atelier-hands.jpg" alt="Karigar at work"></div>
+        <div class="craft__body">
+          <h3>Bandhani</h3>
+          <p class="where">Bhuj, Kutch — 3 families</p>
+          <p>Tie-dye by thumbnail. A single dupatta can carry seventy thousand knots, each tied and dyed by hand across eleven days. No two lengths come out identical, which is the reason the house buys them.</p>
+        </div>
+      </article>
+      <article class="craft">
+        <div class="craft__img"><img src="assets/img/editorial/loom-hall.jpg" alt="Handloom hall"></div>
+        <div class="craft__body">
+          <h3>Kadhwa Weaving</h3>
+          <p class="where">Varanasi — 2 weaving families</p>
+          <p>Each brocade motif is built individually on the loom instead of being floated across the back and cut. Slow, wasteful of time, and the only way to get a saree that looks the same on both faces. Four months per piece.</p>
+        </div>
+      </article>
+      <article class="craft">
+        <div class="craft__img"><img src="assets/img/editorial/loom-hand.jpg" alt="Handloom weaving"></div>
+        <div class="craft__body">
+          <h3>Pit-Loom Handloom</h3>
+          <p class="where">Chanderi &amp; Maheshwar</p>
+          <p>Silk-cotton woven on treadle pit looms, which produce a slightly irregular selvedge and a hand no power loom reproduces. The house buys full warps rather than cut lengths, so the weavers are not left with remnants.</p>
+        </div>
+      </article>
+      <article class="craft">
+        <div class="craft__img"><img src="assets/img/editorial/weaver.jpg" alt="Weaver"></div>
+        <div class="craft__body">
+          <h3>Finishing &amp; Cut</h3>
+          <p class="where">Okhla, Delhi — in house</p>
+          <p>Every garment is cut, canvassed, fitted and hand-finished on site. Nothing is sent out for stitching. Each piece leaves with a card naming the karigars who worked on it and how many hours it took.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ======================= MADE TO MEASURE ======================= -->
+  <section class="section" id="mtm">
+    <div class="section-head reveal">
+      <h2><b>Made</b> To Measure</h2>
+      <p class="sub">Eight to fourteen weeks, three fittings</p>
+    </div>
+    <div style="height:34px"></div>
+    <div class="steps reveal">
+      <div class="stepline"><b>01</b><div><h3>Consultation</h3>
+        <p>Two hours at the Delhi or Mumbai atelier. We look at silhouette, fabric weight, embroidery density and — most importantly — your calendar. Bring photographs of what you have rejected as well as what you like; it is more useful.</p></div></div>
+      <div class="stepline"><b>02</b><div><h3>Toile</h3>
+        <p>A full calico mock-up is cut to your measurements and fitted before a single metre of silk is touched. Bridal commissions are toiled twice.</p></div></div>
+      <div class="stepline"><b>03</b><div><h3>Embroidery sample</h3>
+        <p>A 30 × 30 cm sample of the exact motif, thread and ground fabric goes to you for approval. Nothing goes onto the adda frame until you have held it.</p></div></div>
+      <div class="stepline"><b>04</b><div><h3>Three fittings</h3>
+        <p>Structure, then balance, then finish. The final fitting is scheduled no later than ten days before the event so there is room to be wrong once.</p></div></div>
+      <div class="stepline"><b>05</b><div><h3>Delivery</h3>
+        <p>Hand-delivered within India, wrapped in unbleached muslin inside a cotton garment bag, with a care card and the names of everyone who worked on it.</p></div></div>
+    </div>
+    <div style="text-align:center;padding-top:40px">
+      <button class="btn btn--black btn--lg" id="bookBtn">Request an appointment</button>
+    </div>
+  </section>
+
+  <!-- ======================= PRESS ======================= -->
+  <section class="section tint" id="press">
+    <div class="section-head reveal"><h2><b>In</b> Print</h2></div>
+    <div style="height:40px"></div>
+    <div class="press reveal">
+      <div><blockquote>“Sethi's restraint is the loudest thing in Indian couture right now.”</blockquote><cite>Vogue India — March 2025</cite></div>
+      <div><blockquote>“A house that pays its karigars by the piece and says so on the label.”</blockquote><cite>The Voice of Fashion — 2024</cite></div>
+      <div><blockquote>“The only bridal atelier in Delhi where the toile is treated as seriously as the finished dress.”</blockquote><cite>Elle India — November 2025</cite></div>
+    </div>
+  </section>
+
+  <!-- ======================= VISIT ======================= -->
+  <section class="section" id="visit">
+    <div class="section-head reveal">
+      <h2><b>Visit</b> Us</h2>
+      <p class="sub">By appointment, Monday to Saturday</p>
+    </div>
+    <div style="height:34px"></div>
+    <div class="stores reveal">
+      <article class="store">
+        <img src="assets/img/editorial/handloom.jpg" alt="Delhi flagship">
+        <div class="store__b">
+          <h3>New Delhi — Mehrauli Flagship</h3>
+          <p>7 Kalka Das Marg, Mehrauli, New Delhi 110030<br>
+             Monday–Saturday, 10.00–19.00 · Bridal by appointment<br>
+             <a class="link-u" href="tel:1800-266-4488">1800-266-4488</a></p>
+        </div>
+      </article>
+      <article class="store">
+        <img src="assets/img/editorial/atelier-kashida.jpg" alt="Mumbai atelier">
+        <div class="store__b">
+          <h3>Mumbai — Kala Ghoda Atelier</h3>
+          <p>Ador House, 6 K. Dubash Marg, Kala Ghoda, Mumbai 400001<br>
+             Tuesday–Sunday, 11.00–20.00 · Groom's fittings Wednesdays<br>
+             <a class="link-u" href="tel:1800-266-4488">1800-266-4488</a></p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ======================= QUOTE ======================= -->
+  <section class="quote reveal">
+    <blockquote>“If it cannot be made well, it does not get shown.”</blockquote>
+    <cite>House rule, since 2009</cite>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+document.getElementById("bookBtn").onclick = () => openModal(`
+  <h3>Request an appointment</h3>
+  <p class="lead" style="margin-top:12px">Tell us the occasion and the date. The atelier team calls back within one working day.</p>
+  <div class="field"><label>Name</label><input placeholder="Your name"></div>
+  <div class="field"><label>Phone</label><input placeholder="Mobile number" maxlength="10" inputmode="numeric"></div>
+  <div class="field"><label>Atelier</label><select><option>New Delhi — Mehrauli</option><option>Mumbai — Kala Ghoda</option></select></div>
+  <div class="field"><label>Occasion</label><select><option>Bridal</option><option>Groom</option><option>Trousseau</option><option>Festive / other</option></select></div>
+  <div class="field"><label>Event date</label><input type="date"></div>
+  <button class="btn btn--black btn--block" id="bookGo">Request appointment</button>
+  <p class="lead" style="margin:14px 0 0;font-size:12px">Demo build — nothing is submitted anywhere.</p>`);
+
+document.addEventListener("click", e => {
+  if (e.target.id === "bookGo") {
+    document.querySelector(".modal__x").click();
+    toast("Request noted — the atelier will call you back");
+  }
+});
+
+mountShell("atelier");
+</script>
+</body>
+</html>

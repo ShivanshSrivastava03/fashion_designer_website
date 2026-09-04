@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Responsive overflow audit</title>
+<style>body{margin:0;font:12px/1.6 monospace;padding:14px}
+iframe{border:0;position:absolute;left:-9999px;top:0}
+pre{white-space:pre-wrap}</style></head>
+<body>
+<pre id="dbg">auditing…</pre>
+<script>
+const PAGES = ["index.html","women.html?sub=lehengas","men.html","product.html?id=VS-M-1103",
+               "bag.html","bag.html?step=3","order.html","atelier.html"];
+const WIDTHS = [360, 390, 768, 1024, 1180, 1440];
+const log = [];
+
+function audit(src, width){
+  return new Promise(res => {
+    const f = document.createElement("iframe");
+    f.style.width = width + "px"; f.style.height = "900px"; f.src = src;
+    f.onload = () => setTimeout(() => {
+      const d = f.contentDocument, w = f.contentWindow;
+      const vw = d.documentElement.clientWidth;
+      const contained = el => {
+        for (let p = el.parentElement; p; p = p.parentElement) {
+          const s = w.getComputedStyle(p);
+          if (s.position === "fixed") return true;
+          if (["auto","scroll","hidden","clip"].includes(s.overflowX)) return true;
+        }
+        return false;
+      };
+      const bad = [];
+      d.querySelectorAll("*").forEach(el => {
+        const b = el.getBoundingClientRect();
+        if (b.right <= vw + 1) return;
+        if (contained(el)) return;
+        if (w.getComputedStyle(el).position === "fixed") return;
+        bad.push(el.tagName + (typeof el.className === "string" && el.className ? "." + el.className.trim().split(/\s+/)[0] : ""));
+      });
+      const sw = d.documentElement.scrollWidth;
+      log.push(`${(src + " @" + width).padEnd(42)} scrollW=${String(sw).padEnd(5)} ${sw <= vw + 1 && !bad.length ? "OK" : "OVERFLOW: " + [...new Set(bad)].slice(0, 5).join(", ")}`);
+      document.getElementById("dbg").textContent = log.join("\n");
+      f.remove(); res();
+    }, 900);
+    document.body.appendChild(f);
+  });
+}
+
+// run every combination in parallel — virtual-time headless collapses the waits
+const jobs = [];
+for (const p of PAGES) for (const w of WIDTHS) jobs.push(audit(p, w));
+Promise.all(jobs).then(() => {
+  log.sort();
+  const fails = log.filter(l => l.includes("OVERFLOW")).length;
+  document.getElementById("dbg").textContent =
+    log.join("\n") + `\n\n${log.length - fails} clean / ${log.length} checks` +
+    (fails ? `  — ${fails} OVERFLOW` : "  — ALL CLEAN");
+});
+</script></body></html>
